@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>泉州暴走三日游攻略</title>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+      }
+      .container {
+        display: grid;
+        grid-template-rows: auto 1fr 200px;
+        height: 100vh;
+      }
+      .header {
+        background-color: #0079c1;
+        color: white;
+        padding: 0.5rem 1rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      }
+      .map-container {
+        width: 100%;
+        height: 100%;
+      }
+      #viewDiv {
+        width: 100%;
+        height: 100%;
+      }
+      .basemap-gallery {
+        background-color: #f8f8f8;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+      }
+      .basemap-gallery h2 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        text-align: center;
+        color: #333;
+      }
+    </style>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.28/"></script>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>泉州暴走三日游攻略</h1>
+    </header>
+    <div class="map-container">
+      <div id="viewDiv"></div>
+    </div>
+    <div class="basemap-gallery">
+      <h2>底图库</h2>
+      <div id="basemapGallery"></div>
+    </div>
+  </div>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/FeatureLayer",
+      "esri/widgets/BasemapGallery",
+      "esri/widgets/Legend",
+      "esri/widgets/Search",
+      "esri/widgets/LayerList",
+      "esri/widgets/ScaleBar"
+    ], function(Map, MapView, FeatureLayer, BasemapGallery, Legend, Search, LayerList, ScaleBar) {
+      
+      // 创建地图
+      const map = new Map({
+        basemap: "streets-navigation-vector"
+      });
+      
+      // 创建视图
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [118.58, 24.93],  // 泉州中心坐标
+        zoom: 12
+      });
+      
+      // 添加您指定的专题图层
+      const quanzhouLayer = new FeatureLayer({
+        url: "https://www.geosceneonline.cn/server/rest/services/Hosted/incidents_000001/FeatureServer",
+        title: "泉州旅游景点",
+        opacity: 0.8,
+        popupTemplate: {
+          title: "{景点名称}",
+          content: [{
+            type: "fields",
+            fieldInfos: [
+              { fieldName: "景点名称", label: "景点名称" },
+              { fieldName: "景点类型", label: "景点类型" },
+              { fieldName: "景点等级", label: "景点等级" },
+              { fieldName: "地址", label: "地址" },
+              { fieldName: "开放时间", label: "开放时间" },
+              { fieldName: "门票价格", label: "门票价格" }
+            ]
+          }]
+        }
+      });
+      
+      // 将图层添加到地图
+      map.add(quanzhouLayer);
+      
+      // 添加部件
+      const search = new Search({ view: view });
+      view.ui.add(search, "top-right");
+      
+      const legend = new Legend({ view: view });
+      view.ui.add(legend, "bottom-right");
+      
+      const layerList = new LayerList({ view: view });
+      view.ui.add(layerList, "top-left");
+      
+      const scaleBar = new ScaleBar({ view: view });
+      view.ui.add(scaleBar, "bottom-left");
+      
+      // 初始化底图库
+      const basemapGallery = new BasemapGallery({
+        view: view,
+        container: "basemapGallery"
+      });
+      
+      // 监听图层加载事件
+      quanzhouLayer.when(() => {
+        console.log("泉州旅游景点图层加载成功");
+      }).catch(error => {
+        console.error("图层加载失败:", error);
+        alert("专题图层加载失败，请检查:\n1. 网络连接\n2. 服务地址是否正确\n3. 是否有访问权限");
+      });
+    });
+  </script>
+</body>
+</html>
